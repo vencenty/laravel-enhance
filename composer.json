@@ -1,0 +1,17 @@
+{
+    "name": "vencenty/laravel-enhance",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "vencenty",
+            "email": "yanchengtian0536@163.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Vencenty\\LaravelEnhance\\": "src/"
+        }
+    },
+    "require": {
+    }
+}
