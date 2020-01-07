@@ -78,15 +78,10 @@ trait JsonResponse
     /**
      * 数组的第一个元素为小于0的数字,那么认为是错误码
      * @param $data
-     * @param $isErrorHandler Closure|null
      * @return bool
      */
-    private function isError($data, Closure $isErrorHandler = null)
+    private function isError($data)
     {
-        if ($isErrorHandler) {
-            return $isErrorHandler($data);
-        }
-
         $supposeErrorCode = is_array($data) ? current($data) : false;
         return $supposeErrorCode && is_numeric($supposeErrorCode) && ($supposeErrorCode < 0);
     }
