@@ -89,7 +89,7 @@ trait JsonResponse
     private function isError($data)
     {
         $supposeErrorCode = is_array($data) ? current($data) : false;
-        return $supposeErrorCode && is_numeric($supposeErrorCode) && ($supposeErrorCode < 0);
+        return $supposeErrorCode && is_numeric($supposeErrorCode) && ($supposeErrorCode !== 0);
     }
 
     /**
