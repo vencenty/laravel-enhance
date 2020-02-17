@@ -2,6 +2,7 @@
 
 namespace Vencenty\LaravelEnhance\Traits;
 
+use Illuminate\Http\Response;
 use Closure;
 
 
@@ -10,6 +11,7 @@ trait JsonResponse
 
     /**
      * 输出错误
+     *
      * @param $target
      * @return array
      */
@@ -25,9 +27,10 @@ trait JsonResponse
 
     /**
      * 判断是否产生了错误
+     *
      * @param null $message
      * @param int $error
-     * @return \Illuminate\Http\JsonResponse
+     * @return Response
      */
     private function response($message = null, $error = 0)
     {
@@ -41,9 +44,10 @@ trait JsonResponse
 
     /**
      * 创建响应结构体
+     *
      * @param $message
      * @param $error
-     * @return array
+     * @return Response
      */
     private function createResponsiveBody($message, $error)
     {
@@ -66,9 +70,10 @@ trait JsonResponse
 
     /**
      * 请求成功返回的响应码
+     *
      * @param null $message
      * @param int $error
-     * @return \Illuminate\Http\JsonResponse
+     * @return Response
      */
     protected function success($message = null, $error = 0)
     {
@@ -77,6 +82,7 @@ trait JsonResponse
 
     /**
      * 数组的第一个元素为小于0的数字,那么认为是错误码
+     *
      * @param $data
      * @return bool
      */
@@ -88,9 +94,10 @@ trait JsonResponse
 
     /**
      * 返回错误信息
+     *
      * @param null $message
      * @param int $error
-     * @return \Illuminate\Http\JsonResponse
+     * @return Response
      */
     protected function error($message = null, $error = -1)
     {
