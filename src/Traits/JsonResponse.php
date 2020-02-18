@@ -4,6 +4,7 @@ namespace Vencenty\LaravelEnhance\Traits;
 
 use Illuminate\Http\Response;
 use Closure;
+use Illuminate\Support\Arr;
 
 
 trait JsonResponse
@@ -89,7 +90,12 @@ trait JsonResponse
     private function isError($data)
     {
         $supposeErrorCode = is_array($data) ? current($data) : false;
-        return $supposeErrorCode && is_numeric($supposeErrorCode) && ($supposeErrorCode !== 0);
+
+        if ($this->isAssoc($data) && isset($data['error']) && $data['error'] !== 0) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -103,4 +109,18 @@ trait JsonResponse
     {
         return $this->response($message, $error);
     }
+
+    /**
+     * 检查数组是否为关联数组
+     *
+     * @param $array
+     * @return bool
+     */
+    protected function isAssoc(array $array)
+    {
+        $keys = array_keys($array);
+
+        return array_keys($keys) !== $keys;
+    }
+
 }
