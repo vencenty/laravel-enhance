@@ -89,8 +89,6 @@ trait JsonResponse
      */
     private function isError($data)
     {
-        $supposeErrorCode = is_array($data) ? current($data) : false;
-
         if ($this->isAssoc($data) && isset($data['error']) && $data['error'] !== 0) {
             return true;
         }
