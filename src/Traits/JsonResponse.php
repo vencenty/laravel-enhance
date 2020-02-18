@@ -89,7 +89,7 @@ trait JsonResponse
      */
     private function isError($data)
     {
-        if ($this->isAssoc($data) && isset($data['error']) && $data['error'] !== 0) {
+        if (Arr::isAssoc($data) && isset($data['error']) && $data['error'] !== 0) {
             return true;
         }
 
@@ -108,17 +108,5 @@ trait JsonResponse
         return $this->response($message, $error);
     }
 
-    /**
-     * 检查数组是否为关联数组
-     *
-     * @param $array
-     * @return bool
-     */
-    protected function isAssoc(array $array)
-    {
-        $keys = array_keys($array);
-
-        return array_keys($keys) !== $keys;
-    }
 
 }

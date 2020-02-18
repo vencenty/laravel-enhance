@@ -13,5 +13,6 @@
         }
     },
     "require": {
+        "laravel/framework": "^6.2"
     }
 }
