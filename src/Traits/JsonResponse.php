@@ -2,6 +2,9 @@
 
 namespace Vencenty\LaravelEnhance\Traits;
 
+use EasyWeChat\Kernel\Contracts\Arrayable;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Response;
 use Closure;
 use Illuminate\Support\Arr;
@@ -89,6 +92,10 @@ trait JsonResponse
      */
     private function isError($data)
     {
+        if($data instanceof Model || $data instanceof Collection) {
+            $data = $data->toArray();
+        }
+
         if (Arr::isAssoc($data) && isset($data['error']) && $data['error'] !== 0) {
             return true;
         }
