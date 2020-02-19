@@ -2,118 +2,128 @@
 
 namespace Vencenty\LaravelEnhance\Traits;
 
-use EasyWeChat\Kernel\Contracts\Arrayable;
+
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Response;
-use Closure;
+use Exception;
 use Illuminate\Support\Arr;
 
 
 trait JsonResponse
 {
+    /**
+     * 是否是错误
+     *
+     * @var bool
+     */
+    protected $isError;
 
     /**
-     * 输出错误
+     * 错误状态码
      *
-     * @param $target
-     * @return array
+     * @var int
      */
-    protected function resolveError($target)
+    protected $errorStatusCode = -10000;
+
+    /**
+     * 成功状态码
+     *
+     * @var int
+     */
+    protected $successStatusCode = 0;
+
+    /**
+     * 解析错误并输出
+     *
+     * @param $data
+     * @return array
+     * @throws Exception
+     */
+    protected function resolveError($data)
     {
-        list($error, $message) = $target;
+        // 字符串的话直接赋值返回
+        if (is_string($data)) {
+            $message = $data;
+        } elseif (is_array($data) && !Arr::isAssoc($data)) { // 如果是数组并且不是关联数组的话,拆解
+            list($error, $message) = $data;
+        } else {
+            throw new Exception("不支持的错误返回格式");
+        }
 
         return [
-            'error' => $error,
+            'error' => $error ?? $this->errorStatusCode,
             'message' => $message
         ];
     }
 
     /**
-     * 判断是否产生了错误
+     * 返回结果
      *
-     * @param null $message
-     * @param int $error
-     * @return Response
+     * @param $result
+     * @param $status
+     * @param $headers
+     * @return \Illuminate\Contracts\Routing\ResponseFactory|Response
+     * @throws Exception
      */
-    private function response($message = null, $error = 0)
+    private function response($result, $status, $headers)
     {
-        $data = $this->isError($message)
-            ? $this->resolveError($message)
-            : $this->createResponsiveBody($message, $error);
+        $content = $this->isError
+            ? $this->resolveError($result)
+            : $this->createResponsiveBody($result);
 
-        return response($data);
-    }
-
-
-    /**
-     * 创建响应结构体
-     *
-     * @param $message
-     * @param $error
-     * @return Response
-     */
-    private function createResponsiveBody($message, $error)
-    {
-        // 转为collection
-        $output = collect([
-            'error' => $error,
-        ]);
-
-        // 如果是字符串的话
-        if (is_string($message)) {
-            $output = $output->merge(['message' => $message]);
-        }
-        // 全部merge到output中
-        if (is_array($message) || is_object($message)) {
-            $output = $output->merge($message);
-        }
-
-        return $output;
+        return response($content, $status, $headers);
     }
 
     /**
-     * 请求成功返回的响应码
-     *
-     * @param null $message
-     * @param int $error
-     * @return Response
-     */
-    protected function success($message = null, $error = 0)
-    {
-        return $this->response($message, $error);
-    }
-
-    /**
-     * 数组的第一个元素为小于0的数字,那么认为是错误码
+     * 创建响应
      *
      * @param $data
-     * @return bool
+     * @return array
      */
-    private function isError($data)
+    private function createResponsiveBody($data)
     {
-        if($data instanceof Model || $data instanceof Collection) {
+        $body = [
+            'error' => $this->successStatusCode,
+        ];
+
+        if ($data instanceof Model || $data instanceof Collection) {
             $data = $data->toArray();
         }
 
-        if (Arr::isAssoc($data) && isset($data['error']) && $data['error'] !== 0) {
-            return true;
-        }
+        $body = array_merge($body, $data);
 
-        return false;
+        return $body;
+    }
+
+    /**
+     * 返回成功信息
+     *
+     * @param null $result
+     * @param int $status
+     * @param array $headers
+     * @return \Illuminate\Contracts\Routing\ResponseFactory|Response
+     * @throws Exception
+     */
+    protected function success($result = null, $status = 200, $headers = [])
+    {
+        $this->isError = false;
+        return $this->response($result, $status, $headers);
     }
 
     /**
      * 返回错误信息
      *
-     * @param null $message
-     * @param int $error
-     * @return Response
+     * @param null $result
+     * @param int $status
+     * @param array $headers
+     * @return \Illuminate\Contracts\Routing\ResponseFactory|Response
+     * @throws Exception
      */
-    protected function error($message = null, $error = -1)
+    protected function error($result = null, $status = 200, $headers = [])
     {
-        return $this->response($message, $error);
+        $this->isError = true;
+        return $this->response($result, $status, $headers);
     }
-
 
 }
