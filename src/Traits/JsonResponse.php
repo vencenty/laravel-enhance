@@ -38,17 +38,14 @@ trait JsonResponse
      *
      * @param $data
      * @return array
-     * @throws Exception
      */
     protected function resolveError($data)
     {
         // 字符串的话直接赋值返回
         if (is_string($data)) {
             $message = $data;
-        } elseif (is_array($data) && !Arr::isAssoc($data)) { // 如果是数组并且不是关联数组的话,拆解
+        } else { // 如果是数组并且不是关联数组的话,拆解
             list($error, $message) = $data;
-        } else {
-            throw new Exception("不支持的错误返回格式");
         }
 
         return [
@@ -64,7 +61,6 @@ trait JsonResponse
      * @param $status
      * @param $headers
      * @return \Illuminate\Contracts\Routing\ResponseFactory|Response
-     * @throws Exception
      */
     private function response($result, $status, $headers)
     {
@@ -103,7 +99,6 @@ trait JsonResponse
      * @param int $status
      * @param array $headers
      * @return \Illuminate\Contracts\Routing\ResponseFactory|Response
-     * @throws Exception
      */
     protected function success($result = null, $status = 200, $headers = [])
     {
@@ -118,7 +113,6 @@ trait JsonResponse
      * @param int $status
      * @param array $headers
      * @return \Illuminate\Contracts\Routing\ResponseFactory|Response
-     * @throws Exception
      */
     protected function error($result = null, $status = 200, $headers = [])
     {
