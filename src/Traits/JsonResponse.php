@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Response;
 use Exception;
+use Illuminate\Pagination\AbstractPaginator;
 use Illuminate\Support\Arr;
 
 
@@ -83,7 +84,7 @@ trait JsonResponse
             'error' => $this->successStatusCode,
         ];
 
-        if ($data instanceof Model || $data instanceof Collection) {
+        if ($data instanceof Model || $data instanceof Collection || $data instanceof AbstractPaginator) {
             $data = $data->toArray();
         }
 
