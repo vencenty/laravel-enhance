@@ -88,7 +88,13 @@ trait JsonResponse
             $data = $data->toArray();
         }
 
-        $body = array_merge($body, $data);
+        if(is_string($data)) {
+            $body = array_merge($body, ['message' => $data]);
+        }
+
+        if (is_array($data)) {
+            $body = array_merge($body, $data);
+        }
 
         return $body;
     }
