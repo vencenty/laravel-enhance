@@ -65,6 +65,11 @@ trait JsonResponse
      */
     private function response($result, $status, $headers)
     {
+        // 如果返回的是响应，那么直接抛出
+        if($result instanceof Response) {
+            return $result;
+        }
+
         $content = $this->isError
             ? $this->resolveError($result)
             : $this->createResponsiveBody($result);
