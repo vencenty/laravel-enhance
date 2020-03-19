@@ -136,7 +136,6 @@ trait ResourceCURD
      */
     public static function simpleEdit(array $options = [])
     {
-        new ArticleRequest();
         /** @var Model $model Model模型 */
         $model = new static;
         /** @var array $result 输出给客户端的结果 */
