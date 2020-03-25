@@ -172,7 +172,9 @@ trait ResourceCURD
         }
 
         if ($options['isEdit']) {
+            // 查询数据
             $model = $model->findOrFail($primaryKeyValue);
+
         }
 
         /**
@@ -188,12 +190,14 @@ trait ResourceCURD
                 if ($result) return $result;
             }
 
+            $originalModel = clone $model;
+
             if (!$model->save()) {
                 return $model->error("保存失败");
             }
 
             if ($options['afterSave'] instanceof Closure) {
-                $result = $options['afterSave']($model);
+                $result = $options['afterSave']($model, $originalModel);
                 if ($result) return $result;
             }
 
