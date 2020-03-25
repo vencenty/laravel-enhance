@@ -190,14 +190,14 @@ trait ResourceCURD
                 if ($result) return $result;
             }
 
-            $originalModel = clone $model;
+            $old = clone $model;
 
             if (!$model->save()) {
                 return $model->error("保存失败");
             }
 
             if ($options['afterSave'] instanceof Closure) {
-                $result = $options['afterSave']($model, $originalModel);
+                $result = $options['afterSave']($model, $old);
                 if ($result) return $result;
             }
 
