@@ -52,6 +52,7 @@ trait ResourceCURD
          * 但是Builder必须要有返回值,否则查询不生效
          * */
         if (isset($params['queryBuilder']) && $params['queryBuilder'] instanceof Closure) {
+
             $model = $params['queryBuilder']->call($model, $request);
             unset($params['queryBuilder']);
         }
@@ -65,23 +66,27 @@ trait ResourceCURD
         }
 
         foreach ($params as $key => $param) {
-
             if ($param instanceof Closure) {
                 $model = $model->{$key}($param);
                 continue;
             }
-
             // 多为数组的形式转为链式调用处理
             // 这样处理以后原先 $model->where(type,'=','3')
             // 括号里面的参数全部转变为 [type, '=', 3]
-            if (Arr::isMultipleArray($param)) {
+            if (is_array($param) && Arr::isMultipleArray($param)) {
                 foreach ($param as $condition) {
                     $model = $model->{$key}(...$condition);
                 }
                 continue;
             }
             // 普通数组形式调用解构赋值以后进行调用
-            $model = $model->$key(...$param);
+            if(is_array($param)) {
+                $model = $model->$key(...$param);
+                continue;
+            }
+
+            $model = $model->$key($param);
+
         }
 
         // 计算总页数
@@ -138,6 +143,8 @@ trait ResourceCURD
     {
         /** @var Model $model Model模型 */
         $model = new static;
+        /** @var null 保存原始模型 */
+        $old = null;
         /** @var array $result 输出给客户端的结果 */
         $result = [];
         /** @var string $method 当前请求的方法 */
@@ -172,9 +179,8 @@ trait ResourceCURD
         }
 
         if ($options['isEdit']) {
-            // 查询数据
             $model = $model->findOrFail($primaryKeyValue);
-
+            $old = clone $model;
         }
 
         /**
@@ -190,7 +196,6 @@ trait ResourceCURD
                 if ($result) return $result;
             }
 
-            $old = clone $model;
 
             if (!$model->save()) {
                 return $model->error("保存失败");
@@ -214,6 +219,7 @@ trait ResourceCURD
             $result['data'] = $data;
         }
 
+
         $result = array_merge($result, $options['loadParams']);
 
         return $result;
@@ -236,11 +242,9 @@ trait ResourceCURD
             return $model->error("错误的请求方式");
         }
         $options = array_merge([
-            'beforeDelete' => null,
-            'afterDelete' => null,
-            'primaryKey' => null,
-            'afterBatchDelete' => null,
-            'beforeBatchDelete' => null,
+            'beforeDelete' => null, // 删除每一项前的回调
+            'afterDelete' => null, // 删除每一项后的回调
+            'primaryKey' => null, // 主键,默认id
         ], $options);
 
 
@@ -254,41 +258,17 @@ trait ResourceCURD
 
         // 主键
         $primaryKey = $options['primaryKey'] ?? $model->getKeyName();
-        // 主键值
+        // 强转成Array
         $waitDeleteIdCollection = (array)$request->post($primaryKey, null);
 
         if (empty($waitDeleteIdCollection)) {
             return $model->error("参数错误, hint:没有{$primaryKey}");
         }
 
-
-        if ($options['beforeBatchDelete'] instanceof Closure) {
-            $model->invokeHooks($options['beforeBatchDelete']);
-        }
-
         $affectRows = static::destroy($waitDeleteIdCollection);
-
-        if ($options['afterBatchDelete'] instanceof Closure) {
-            $model->invokeHooks($options['afterBatchDelete']);
-        }
 
         return ['affectRows' => $affectRows];
     }
 
-    /**
-     * 调用钩子函数,如果有结果的话直接返回结果
-     *
-     * @param Closure $hook
-     * @param $params
-     * @return mixed
-     * @author Vencenty <yanchengtian0536@163.com>
-     */
-    public function invokeHooks(Closure $hook, $params = [])
-    {
-        $hookResult = $hook(...$params);
-        if ($hookResult) {
-            return $hookResult;
-        }
-    }
 
 }
